@@ -10,6 +10,7 @@ struct client_data {
 };
 
 bool network_start();
+void network_process();
 void network_stop();
 
 #endif
