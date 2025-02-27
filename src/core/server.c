@@ -19,7 +19,7 @@ void on_client_desconnected(int client);
 
 // Обработка следующего хода
 void next() {
-	printf("Next step!\n");
+	printf("Next turn!\n");
 }
 
 void check_ready(); // Проверка готовности игроков
@@ -33,7 +33,7 @@ void server_run() {
 
 	// Init plugins
 
-	Timer *timer = after(2, next);
+	Timer *timer = after(TIME_TO_TURN, next);
 
 	network_process();
 }
