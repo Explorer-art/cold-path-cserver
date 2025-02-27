@@ -7,17 +7,20 @@
 #include <utils/timer.h>
 #include <config.h>
 
-// Server state
+// Состояние сервера
 //
-// 0 - starting
+// 0 - запуск
+
 int server_state;
 ClientData clients_data[MAX_CLIENTS] = {0};
 bool clients_ready[MAX_CLIENTS] = {0};
+Timer *timer;
 
 void on_client_connected(int client, char *ip, int port);
 void on_client_desconnected(int client);
 
 // Обработка следующего хода
+
 void next() {
 	printf("Next turn!\n");
 }
@@ -33,11 +36,14 @@ void server_run() {
 
 	// Init plugins
 
-	Timer *timer = after(TIME_TO_TURN, next);
+	timer = after(TIME_TO_TURN, next);
 
 	network_process();
 }
 
 void server_shutdown() {
+	printf("[INFO] Server stopped...\n");
+
+	delete_timer(timer);
 	network_stop();
 }
