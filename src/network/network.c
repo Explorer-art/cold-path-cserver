@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <network.h>
+#include <config.h>
 
 #define BUFFER_SIZE 1024
 
