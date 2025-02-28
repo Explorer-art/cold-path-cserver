@@ -11,8 +11,34 @@
 #include <config.h>
 
 int server;
+client_connected_callback_t client_connected_callback = NULL;
+client_disconnected_callback_t client_disconnected_callback = NULL;
+
+void set_client_connected_callback(client_connected_callback_t callback) {
+	client_connected_callback = callback;
+}
+
+void set_client_disconnected_callback(client_disconnected_callback_t callback) {
+	client_disconnected_callback = callback;
+}
 
 void* client_handle(void* data) {
+	ClientSocketData* client_socket_data = data;
+	struct in_addr addr = client_socket_data->client_addr.sin_addr;
+	char* client_ip = inet_ntoa(addr);
+	int client_port = ntohs(client_socket_data->client_addr.sin_port);
+
+	if (client_connected_callback != NULL) {
+		client_connected_callback(client_socket_data->client, client_ip, client_port);
+	}
+
+	if (client_disconnected_callback != NULL) {
+		client_disconnected_callback(client_socket_data->client, client_ip, client_port);
+	}
+
+	close(client_socket_data->client);
+	free(client_socket_data);
+
 	return NULL;
 }
 
@@ -25,25 +51,19 @@ void network_process() {
 		// Connect accept
 		client = accept(server, (struct sockaddr*)&client_addr, &addr_len);
 
-		struct in_addr addr = client_addr.sin_addr;
-		char* client_ip = inet_ntoa(addr);
-		int client_port = ntohs(client_addr.sin_port);
-
 		if (client == -1) {
 			perror("[ERROR] %s:%d connection failed\n");
 			exit(EXIT_FAILURE);
 		}
 
-		printf("[INFO] %s:%d connected\n", client_ip, client_port);
+		ClientSocketData* client_socket_data = malloc(sizeof(ClientSocketData));
 
-		struct client_data *data = malloc(sizeof(struct client_data));
-
-		data->client = client;
-		data->client_addr = client_addr;
+		client_socket_data->client = client;
+		client_socket_data->client_addr = client_addr;
 
 		pthread_t thread;
 
-		pthread_create(&thread, NULL, client_handle, data);
+		pthread_create(&thread, NULL, client_handle, client_socket_data);
 	}
 }
 
