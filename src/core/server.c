@@ -44,6 +44,10 @@ void on_client_disconnected(int client, const char* ip, int port) {
 	// memset(clients_game_data[client], 0, sizeof(ClientGameData));
 }
 
+void on_client_data(int client, const char* data) {
+	printf("[INFO] Received from %s:%d: %s\n", data);
+}
+
 // Обработка следующего хода
 
 void next() {
@@ -62,6 +66,7 @@ void server_run() {
 
 	set_client_connected_callback(on_client_connected);
 	set_client_disconnected_callback(on_client_disconnected);
+	set_client_data_callback(on_client_data);
 
 	// Init plugins
 

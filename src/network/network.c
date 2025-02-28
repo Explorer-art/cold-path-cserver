@@ -10,9 +10,12 @@
 #include <network.h>
 #include <config.h>
 
+#define BUFFER_SIZE 1024
+
 int server;
 client_connected_callback_t client_connected_callback = NULL;
 client_disconnected_callback_t client_disconnected_callback = NULL;
+client_data_callback_t client_data_callback = NULL;
 
 void set_client_connected_callback(client_connected_callback_t callback) {
 	client_connected_callback = callback;
@@ -20,6 +23,10 @@ void set_client_connected_callback(client_connected_callback_t callback) {
 
 void set_client_disconnected_callback(client_disconnected_callback_t callback) {
 	client_disconnected_callback = callback;
+}
+
+void set_client_data_callback(client_data_callback_t callback) {
+	client_data_callback = callback;
 }
 
 void* client_handle(void* data) {
@@ -30,6 +37,26 @@ void* client_handle(void* data) {
 
 	if (client_connected_callback != NULL) {
 		client_connected_callback(client_socket_data->client, client_ip, client_port);
+	}
+
+	char buffer[BUFFER_SIZE];
+	ssize_t bytes_received;
+
+	while (true) {
+		bytes_received = recv(client_socket_data->client, buffer, sizeof(buffer) - 1, 0);
+
+		if (bytes_received > 0) {
+			buffer[bytes_received] = '\0';
+
+			if (client_data_callback != NULL) {
+				client_data_callback(client_socket_data->client, buffer);
+			}
+		} else if (bytes_received < 0) {
+			fprintf(stderr, "[ERROR] %s:%d recv error\n", client_ip, client_port);
+			break;
+		} else {
+			break;
+		}
 	}
 
 	if (client_disconnected_callback != NULL) {
@@ -57,13 +84,12 @@ void network_process() {
 		}
 
 		ClientSocketData* client_socket_data = malloc(sizeof(ClientSocketData));
-
 		client_socket_data->client = client;
 		client_socket_data->client_addr = client_addr;
 
 		pthread_t thread;
-
 		pthread_create(&thread, NULL, client_handle, client_socket_data);
+		pthread_detach(thread);
 	}
 }
 
