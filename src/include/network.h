@@ -13,7 +13,7 @@ typedef void (*client_connected_callback_t)(int client, const char* ip, int port
 typedef void (*client_disconnected_callback_t)(int client, const char* ip, int port);
 typedef void (*client_data_callback_t)(int client, const char* data);
 
-bool network_start();
+bool network_start(const char* ip, int port);
 void network_process();
 void network_stop();
 void set_client_connected_callback(client_connected_callback_t callback);

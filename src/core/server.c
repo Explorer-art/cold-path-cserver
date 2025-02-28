@@ -62,7 +62,7 @@ void server_run() {
 	printf("[INFO] Server starting...\n");
 	preferred_civs = create_table();
 
-	network_start();
+	network_start(IP, PORT);
 
 	set_client_connected_callback(on_client_connected);
 	set_client_disconnected_callback(on_client_disconnected);
@@ -78,9 +78,9 @@ void server_run() {
 
 	timer = after(TIME_TO_TURN, next);
 
-	network_process();
-
 	server_state = 1;
+
+	network_process();
 }
 
 void server_shutdown() {

@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <network.h>
-#include <config.h>
 
 #define BUFFER_SIZE 1024
 
@@ -69,31 +68,7 @@ void* client_handle(void* data) {
 	return NULL;
 }
 
-void network_process() {
-	int client;
-	struct sockaddr_in client_addr = {0};
-	socklen_t addr_len = sizeof(client_addr);
-
-	while (true) {
-		// Connect accept
-		client = accept(server, (struct sockaddr*)&client_addr, &addr_len);
-
-		if (client == -1) {
-			perror("[ERROR] %s:%d connection failed\n");
-			exit(EXIT_FAILURE);
-		}
-
-		ClientSocketData* client_socket_data = malloc(sizeof(ClientSocketData));
-		client_socket_data->client = client;
-		client_socket_data->client_addr = client_addr;
-
-		pthread_t thread;
-		pthread_create(&thread, NULL, client_handle, client_socket_data);
-		pthread_detach(thread);
-	}
-}
-
-bool network_start() {
+bool network_start(const char* ip, int port) {
 	printf("[INFO] TCP server starting...\n");
 
 	// Create socket
@@ -107,11 +82,11 @@ bool network_start() {
 	// Create struct sockaddr_in
 	struct sockaddr_in server_addr = {0};
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr(IP);
-	server_addr.sin_port = htons(PORT);
+	server_addr.sin_addr.s_addr = inet_addr(ip);
+	server_addr.sin_port = htons(port);
 
-	printf("[INFO] IP: %s\n", IP);
-	printf("[INFO] PORT: %d\n", PORT);
+	printf("[INFO] IP: %s\n", ip);
+	printf("[INFO] PORT: %d\n", port);
 
 	int res;
 	socklen_t addr_len = sizeof(server_addr);
@@ -135,6 +110,30 @@ bool network_start() {
 	printf("[INFO] TCP server started!\n");
 
 	return true;
+}
+
+void network_process() {
+	int client;
+	struct sockaddr_in client_addr = {0};
+	socklen_t addr_len = sizeof(client_addr);
+
+	while (true) {
+		// Connect accept
+		client = accept(server, (struct sockaddr*)&client_addr, &addr_len);
+
+		if (client == -1) {
+			perror("[ERROR] %s:%d connection failed\n");
+			exit(EXIT_FAILURE);
+		}
+
+		ClientSocketData* client_socket_data = malloc(sizeof(ClientSocketData));
+		client_socket_data->client = client;
+		client_socket_data->client_addr = client_addr;
+
+		pthread_t thread;
+		pthread_create(&thread, NULL, client_handle, client_socket_data);
+		pthread_detach(thread);
+	}
 }
 
 void network_stop() {
