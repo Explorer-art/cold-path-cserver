@@ -45,7 +45,7 @@ void on_client_disconnected(int client, const char* ip, int port) {
 }
 
 void on_client_data(int client, const char* data) {
-	printf("[INFO] Received from %s:%d: %s\n", data, clients_data[client].ip, clients_data[client].port);
+	printf("[INFO] Received from %s:%d: %s\n", clients_data[client].ip, clients_data[client].port, data);
 }
 
 // Обработка следующего хода
