@@ -21,7 +21,7 @@ Timer* timer;
 
 // Подключение игрока
 
-void on_client_connected(int client, char* ip, int port) {
+void on_client_connected(int client, const char* ip, int port) {
 	printf("[INFO] %s:%d connected\n", ip, port);
 
 	strncpy(clients_data[client].ip, ip, sizeof(clients_data[client].ip) - 1);
@@ -31,7 +31,7 @@ void on_client_connected(int client, char* ip, int port) {
 	// clients_game_data[client] = {0};
 }
 
-void on_client_disconnected(int client, char* ip, int port) {
+void on_client_disconnected(int client, const char* ip, int port) {
 	printf("[INFO] %s:%d disconnected\n", ip, port);
 
 	// if (clients_data[client].state == 1 || clients_data[client].state == 2) {
@@ -59,6 +59,9 @@ void server_run() {
 	preferred_civs = create_table();
 
 	network_start();
+
+	set_client_connected_callback(on_client_connected);
+	set_client_disconnected_callback(on_client_disconnected);
 
 	// Init plugins
 
