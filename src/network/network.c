@@ -10,8 +10,6 @@
 #include <network.h>
 #include <config.h>
 
-#define BUFFER_SIZE 1024
-
 int server;
 client_connected_callback_t client_connected_callback = NULL;
 client_disconnected_callback_t client_disconnected_callback = NULL;
