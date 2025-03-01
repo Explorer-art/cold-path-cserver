@@ -1,11 +1,18 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <utils/cJSON.h>
+
 typedef struct {
 	char ip[16];
 	int port;
 	int state; // Client state; 0 - connected
 } ClientData;
+
+typedef struct {
+	char* type;
+	cJSON* data;
+} DecodedData;
 
 typedef struct {
 	char type[10];

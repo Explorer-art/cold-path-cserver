@@ -19,6 +19,35 @@ bool clients_ready[MAX_CLIENTS] = {0};
 HashTable* preferred_civs;
 Timer* timer;
 
+DecodedData decode_data(const char* data) {
+	DecodedData decoded_data = { NULL, NULL };
+	
+	char* data_copy = strdup(data);
+	char* token = strtok(data_copy, "`");
+
+	if (token != NULL) {
+		decoded_data.type = strdup(token);
+		token = strtok(NULL, "`");
+
+		if (token != NULL) {
+			decoded_data.data = cJSON_Parse(token);
+		}
+	}
+
+	free(data_copy);
+	return decoded_data;
+}
+
+void free_decoded_data(DecodedData* decoded_data) {
+	if (decoded_data->type) {
+		free(decoded_data->type);
+	}
+
+	if (decoded_data->data) {
+		cJSON_Delete(decoded_data->data);
+	}
+}
+
 // Подключение игрока
 
 void on_client_connected(int client, const char* ip, int port) {
@@ -46,6 +75,17 @@ void on_client_disconnected(int client, const char* ip, int port) {
 
 void on_client_data(int client, const char* data) {
 	printf("[INFO] Received from %s:%d: %s\n", clients_data[client].ip, clients_data[client].port, data);
+
+	DecodedData decoded_data = decode_data(data);
+
+	if (decoded_data.type && decoded_data.data) {
+		char* data_str = cJSON_Print(decoded_data.data);
+		
+		printf("Data type: %s\n", decoded_data.type);
+		printf("Data: %s\n", data_str);
+
+		free(data_str);
+	}
 }
 
 // Обработка следующего хода
