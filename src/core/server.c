@@ -19,6 +19,28 @@ bool clients_ready[MAX_CLIENTS] = {0};
 HashTable* preferred_civs;
 Timer* timer;
 
+cJSON* get_server_info() {
+	int players = 0;
+	int size = 10;
+	cJSON* server_data = cJSON_CreateObject();
+
+	for (int i = 0; i < MAX_CLIENTS; i++) {
+		if (clients_data[i].state == 1) {
+			players++;
+		}
+	}
+
+	// get size
+
+	cJSON_AddStringToObject(server_data, "name", SERVER_NAME);
+	cJSON_AddNumberToObject(server_data, "players", players);
+	cJSON_AddStringToObject(server_data, "server_ip", IP);
+	cJSON_AddNumberToObject(server_data, "server_port", PORT);
+	cJSON_AddNumberToObject(server_data, "size", size);
+
+	return server_data;
+}
+
 DecodedData decode_data(const char* data) {
 	DecodedData decoded_data = { NULL, NULL };
 	
@@ -76,15 +98,26 @@ void on_client_disconnected(int client, const char* ip, int port) {
 void on_client_data(int client, const char* data) {
 	printf("[INFO] Received from %s:%d: %s\n", clients_data[client].ip, clients_data[client].port, data);
 
+	if (server_state == 0) {
+		return;
+	}
+
 	DecodedData decoded_data = decode_data(data);
 
 	if (decoded_data.type && decoded_data.data) {
-		char* data_str = cJSON_Print(decoded_data.data);
-		
-		printf("Data type: %s\n", decoded_data.type);
-		printf("Data: %s\n", data_str);
+		if (strcmp(decoded_data.type, "get_server_info") == 0) {
+			cJSON* server_data = get_server_info();
+			cJSON_SetValuestring(cJSON_GetObjectItem(server_data, "server_ip"), cJSON_GetObjectItem(decoded_data.data, "server_ip")->valuestring);
+			char* server_data_str = cJSON_PrintUnformatted(server_data);
 
-		free(data_str);
+			cJSON_Delete(server_data);
+
+			client_send(client, server_data_str);
+
+			free(server_data_str);
+
+			client_kick(client);
+		}
 	}
 }
 

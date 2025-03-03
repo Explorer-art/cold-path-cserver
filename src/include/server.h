@@ -6,7 +6,7 @@
 typedef struct {
 	char ip[16];
 	int port;
-	int state; // Client state; 0 - connected
+	int state; // Client state; 0 - connected; 1 - in_game;
 } ClientData;
 
 typedef struct {

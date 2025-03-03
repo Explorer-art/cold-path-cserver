@@ -27,6 +27,14 @@ void set_client_data_callback(client_data_callback_t callback) {
 	client_data_callback = callback;
 }
 
+void client_send(int client, const char* data) {
+	send(client, data, strlen(data), 0);
+}
+
+void client_kick(int client) {
+	close(client);
+}
+
 void* client_handle(void* data) {
 	ClientSocketData* client_socket_data = data;
 	struct in_addr addr = client_socket_data->client_addr.sin_addr;
